@@ -24,6 +24,7 @@
 #include "ViennaRNA/read_epars.h"
 #include "ViennaRNA/LPfold.h"
 #include "ViennaRNA/params.h"
+#include "ViennaRNA/constraints_SHAPE.h"
 #include "ViennaRNA/file_formats.h"
 #include "ViennaRNA/commands.h"
 #include "RNAplfold_cmdl.h"
@@ -138,7 +139,7 @@ main(int  argc,
   struct RNAplfold_args_info  args_info;
   char                        *structure, *ParamFile, *ns_bases, *rec_sequence, *rec_id,
                               **rec_rest, *orig_sequence, *id_prefix, *id_delim, *filename_delim,
-                              *command_file;
+                              *command_file, *shape_file, *shape_method, *shape_conversion,;
   unsigned int                rec_type, read_opt;
   int                         length, istty, winsize, pairdist, tempwin, temppair, tempunpaired,
                               noconv, i, plexoutput, simply_putout, openenergies, binaries, auto_id,
@@ -191,6 +192,9 @@ main(int  argc,
                           id_delim, "_",
                           id_digits, 4,
                           seq_number, 1);
+
+  /* SHAPE reactivity data */
+  ggo_get_SHAPE(args_info, with_shapes, shape_file, shape_method, shape_conversion);
 
   ggo_get_md_part(args_info, md);
 
@@ -432,6 +436,14 @@ main(int  argc,
       }
     }
 
+    if (with_shapes) {
+      vrna_constraints_add_SHAPE(vc,
+                                 shape_file,
+                                 shape_method,
+                                 shape_conversion,
+                                 verbose,
+                                 VRNA_OPTION_MFE | ((pf) ? VRNA_OPTION_PF : 0));
+    }
     /*
      ########################################################
      # begin actual computations
@@ -598,6 +610,7 @@ main(int  argc,
     free(rec_sequence);
     free(orig_sequence);
     free(structure);
+    //TODO: milad: add this here?  if (with_shapes || (constraints_file && (!batch)))       break;
     free(SEQ_ID);
 
     rec_id    = rec_sequence = orig_sequence = NULL;
