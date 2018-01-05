@@ -139,11 +139,11 @@ main(int  argc,
   struct RNAplfold_args_info  args_info;
   char                        *structure, *ParamFile, *ns_bases, *rec_sequence, *rec_id,
                               **rec_rest, *orig_sequence, *id_prefix, *id_delim, *filename_delim,
-                              *command_file, *shape_file, *shape_method, *shape_conversion,;
+                              *command_file, *shape_file, *shape_method, *shape_conversion;
   unsigned int                rec_type, read_opt;
   int                         length, istty, winsize, pairdist, tempwin, temppair, tempunpaired,
                               noconv, i, plexoutput, simply_putout, openenergies, binaries, auto_id,
-                              id_digits, filename_full;
+                              id_digits, filename_full, with_shapes;
   long int                    seq_number;
   float                       cutoff;
   double                      **pup, betaScale;
@@ -436,14 +436,6 @@ main(int  argc,
       }
     }
 
-    if (with_shapes) {
-      vrna_constraints_add_SHAPE(vc,
-                                 shape_file,
-                                 shape_method,
-                                 shape_conversion,
-                                 verbose,
-                                 VRNA_OPTION_MFE | ((pf) ? VRNA_OPTION_PF : 0));
-    }
     /*
      ########################################################
      # begin actual computations
@@ -491,9 +483,18 @@ main(int  argc,
 
       vrna_fold_compound_t *fc = vrna_fold_compound(rec_sequence, &md, VRNA_OPTION_WINDOW);
 
+
       if (commands)
         vrna_commands_apply(fc, commands, VRNA_CMD_PARSE_HC | VRNA_CMD_PARSE_SC);
-
+      
+      if (with_shapes) {
+      vrna_constraints_add_SHAPE(fc,
+                                 shape_file,
+                                 shape_method,
+                                 shape_conversion,
+                                 0,
+                                 VRNA_OPTION_WINDOW);
+      }
       pf_parameters = vrna_exp_params(&md);
 
       /* prepare data structure for callback */
@@ -581,9 +582,12 @@ main(int  argc,
           free(data.pup);
         }
       }
+    
 
       vrna_fold_compound_free(fc);
-
+    //TODO: milad: add this here?  
+    if (with_shapes)       
+      break;
       free(pf_parameters);
 
       /* clean up data */
@@ -605,12 +609,12 @@ main(int  argc,
 
     (void)fflush(stdout);
 
+
     /* clean up */
     free(rec_id);
     free(rec_sequence);
     free(orig_sequence);
     free(structure);
-    //TODO: milad: add this here?  if (with_shapes || (constraints_file && (!batch)))       break;
     free(SEQ_ID);
 
     rec_id    = rec_sequence = orig_sequence = NULL;
