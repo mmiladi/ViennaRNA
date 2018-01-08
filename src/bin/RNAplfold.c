@@ -585,9 +585,6 @@ main(int  argc,
     
 
       vrna_fold_compound_free(fc);
-    //TODO: milad: add this here?  
-    if (with_shapes)       
-      break;
       free(pf_parameters);
 
       /* clean up data */
@@ -605,6 +602,7 @@ main(int  argc,
       free(fname3);
       free(fname4);
       free(ffname);
+
     }
 
     (void)fflush(stdout);
@@ -619,6 +617,9 @@ main(int  argc,
 
     rec_id    = rec_sequence = orig_sequence = NULL;
     rec_rest  = NULL;
+
+    if (with_shapes) // skip additional sequences in case of SHAPE
+    	break;
 
     ID_number_increase(&seq_number, "Sequence");
 
