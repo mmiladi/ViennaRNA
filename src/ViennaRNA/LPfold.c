@@ -1838,7 +1838,9 @@ compute_pU(vrna_fold_compound_t       *vc,
   for (startu = MIN2(ulength, k); startu > 0; startu--) {
     temp = 0.;
     if (sc) {
-      if (hc->up_ext[k - startu + 1] >= startu) {
+      if (sc->exp_energy_up && // skip access to unpaired soft constraints,
+    		                   // Deigan method only provides pairing pseudo energy terms.
+    		  hc->up_ext[k - startu + 1] >= startu) {
         for (i5 = MAX2(1, k - winSize + 2); i5 <= MIN2(k - startu, n - winSize + 1); i5++)
           temp += q[i5][k - startu] *
                   q[k + 1][i5 + winSize - 1] *
